@@ -1,0 +1,35 @@
+info:
+  name: Get Applications
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/applications"
+  headers:
+    - name: accept
+      value: application/json
+    - name: X-User-Email
+      value: "{{userEmail}}"
+  body:
+    type: none
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200", function() {
+          expect(res.status).to.equal(200);
+        });
+
+        test("Returns applications with system owner", function() {
+          expect(res.body).to.be.an("array");
+          expect(res.body.length).to.be.above(0);
+          expect(res.body[0]).to.have.property("code");
+          expect(res.body[0]).to.have.property("systemOwner");
+        });
+
+settings:
+  encodeUrl: true

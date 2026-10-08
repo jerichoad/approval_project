@@ -1,0 +1,38 @@
+info:
+  name: Approve - Self Approval Not Allowed
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests/{{requestId}}/approve"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{aliceEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "expectedVersion": {{requestVersion}}
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 403 Forbidden", function() {
+          expect(res.status).to.equal(403);
+        });
+
+        test("Problem code SELF_APPROVAL_NOT_ALLOWED or NOT_ASSIGNED_APPROVER", function() {
+          expect(["SELF_APPROVAL_NOT_ALLOWED", "NOT_ASSIGNED_APPROVER"]).to.include(res.body.code);
+        });
+
+settings:
+  encodeUrl: true

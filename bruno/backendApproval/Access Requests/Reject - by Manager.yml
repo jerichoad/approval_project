@@ -1,0 +1,40 @@
+info:
+  name: Reject - by Manager
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests/{{requestId}}/reject"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{bobEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "expectedVersion": {{requestVersion}},
+        "reason": "Business justification is insufficient for this role."
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200 OK", function() {
+          expect(res.status).to.equal(200);
+        });
+
+        test("Status is Rejected", function() {
+          expect(res.body.status).to.equal("Rejected");
+          expect(res.body.rejectionReason).to.equal("Business justification is insufficient for this role.");
+        });
+
+settings:
+  encodeUrl: true

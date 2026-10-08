@@ -1,0 +1,40 @@
+info:
+  name: Approve - by Manager
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests/{{requestId}}/approve"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{bobEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "expectedVersion": {{requestVersion}}
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200 OK", function() {
+          expect(res.status).to.equal(200);
+        });
+
+        test("Version incremented", function() {
+          expect(res.body.version).to.equal(Number(bru.getVar("requestVersion")) + 1);
+        });
+
+        bru.setVar("requestVersion", res.body.version);
+
+settings:
+  encodeUrl: true

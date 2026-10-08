@@ -1,0 +1,51 @@
+info:
+  name: Create - Non Production Read
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{aliceEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "clientRequestId": "{{$guid}}",
+        "applicationId": "{{crmAppId}}",
+        "environment": "NonProduction",
+        "accessLevel": "Read",
+        "justification": "Need read access to CRM for onboarding task."
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 201 Created", function() {
+          expect(res.status).to.equal(201);
+        });
+
+        test("Low risk request starts PendingManagerApproval", function() {
+          expect(res.body.status).to.equal("PendingManagerApproval");
+          expect(res.body.isHighRisk).to.equal(false);
+          expect(res.body.version).to.equal(1);
+        });
+
+        test("Allowed actions empty for requester", function() {
+          expect(res.body.allowedActions).to.be.an("array");
+        });
+
+        bru.setVar("requestId", res.body.id);
+        bru.setVar("requestVersion", res.body.version);
+
+settings:
+  encodeUrl: true

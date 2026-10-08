@@ -1,0 +1,23 @@
+variables:
+  - name: baseUrl
+    value: http://localhost:5080
+  - name: userEmail
+    value: alice@example.local
+  - name: aliceEmail
+    value: alice@example.local
+  - name: bobEmail
+    value: bob@example.local
+  - name: carolEmail
+    value: carol@example.local
+  - name: danaEmail
+    value: dana@example.local
+  - name: erinEmail
+    value: erin@example.local
+  - name: crmAppId
+    value: 10000000-0000-0000-0000-000000000001
+  - name: financeAppId
+    value: 10000000-0000-0000-0000-000000000002
+  - name: requestId
+    value: ""
+  - name: requestVersion
+    value: "1"

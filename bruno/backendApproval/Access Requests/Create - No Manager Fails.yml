@@ -1,0 +1,42 @@
+info:
+  name: Create - No Manager Fails
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{bobEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "clientRequestId": "{{$guid}}",
+        "applicationId": "{{crmAppId}}",
+        "environment": "NonProduction",
+        "accessLevel": "Read",
+        "justification": "Bob has no manager, this must fail."
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 422 Unprocessable Entity", function() {
+          expect(res.status).to.equal(422);
+        });
+
+        test("Problem code NO_MANAGER", function() {
+          expect(res.body.code).to.equal("NO_MANAGER");
+        });
+
+settings:
+  encodeUrl: true

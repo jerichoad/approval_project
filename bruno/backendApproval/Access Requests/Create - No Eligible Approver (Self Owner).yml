@@ -1,0 +1,42 @@
+info:
+  name: Create - No Eligible Approver (Self Owner)
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{carolEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "clientRequestId": "{{$guid}}",
+        "applicationId": "{{crmAppId}}",
+        "environment": "Production",
+        "accessLevel": "Admin",
+        "justification": "Carol is System Owner of CRM, high risk request on own app must fail."
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 422 Unprocessable Entity", function() {
+          expect(res.status).to.equal(422);
+        });
+
+        test("Problem code NO_ELIGIBLE_APPROVER", function() {
+          expect(res.body.code).to.equal("NO_ELIGIBLE_APPROVER");
+        });
+
+settings:
+  encodeUrl: true

@@ -1,0 +1,42 @@
+info:
+  name: Create - Idempotent Replay
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{aliceEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "clientRequestId": "idempotency-demo-fixed-key",
+        "applicationId": "{{crmAppId}}",
+        "environment": "NonProduction",
+        "accessLevel": "Read",
+        "justification": "Testing idempotent replay with same clientRequestId."
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        // Jalankan request ini dua kali dengan clientRequestId sama.
+        // Panggilan pertama -> 201 Created. Panggilan kedua -> 200 OK (replay).
+    - type: tests
+      code: |-
+        test("Status 201 or 200 (replay)", function() {
+          expect([200, 201]).to.include(res.status);
+        });
+
+settings:
+  encodeUrl: true

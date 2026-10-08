@@ -1,0 +1,34 @@
+info:
+  name: Get Users
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/users"
+  headers:
+    - name: accept
+      value: application/json
+  body:
+    type: none
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200", function() {
+          expect(res.status).to.equal(200);
+        });
+
+        test("Returns user list", function() {
+          expect(res.body).to.be.an("array");
+          expect(res.body.length).to.be.above(0);
+          expect(res.body[0]).to.have.property("id");
+          expect(res.body[0]).to.have.property("email");
+          expect(res.body[0]).to.have.property("displayName");
+        });
+
+settings:
+  encodeUrl: true

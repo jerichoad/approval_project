@@ -1,0 +1,46 @@
+info:
+  name: Create - High Risk Production Admin
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{aliceEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "clientRequestId": "{{$guid}}",
+        "applicationId": "{{crmAppId}}",
+        "environment": "Production",
+        "accessLevel": "Admin",
+        "justification": "Need admin access to CRM production for incident response."
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 201 Created", function() {
+          expect(res.status).to.equal(201);
+        });
+
+        test("High risk requires manager then system owner", function() {
+          expect(res.body.isHighRisk).to.equal(true);
+          expect(res.body.status).to.equal("PendingManagerApproval");
+        });
+
+        bru.setVar("highRiskRequestId", res.body.id);
+        bru.setVar("highRiskRequestVersion", res.body.version);
+
+settings:
+  encodeUrl: true

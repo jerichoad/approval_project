@@ -1,0 +1,34 @@
+info:
+  name: Approve - by System Owner
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests/{{highRiskRequestId}}/approve"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{carolEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "expectedVersion": {{highRiskRequestVersion}}
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 200 OK or 403 if pending manager first", function() {
+          expect([200, 403]).to.include(res.status);
+        });
+
+settings:
+  encodeUrl: true

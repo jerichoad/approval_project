@@ -1,0 +1,39 @@
+info:
+  name: Approve - Stale Version Conflict
+  type: http
+  seq: 15
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/access-requests/{{requestId}}/approve"
+  headers:
+    - name: accept
+      value: application/json
+    - name: content-type
+      value: application/json
+    - name: X-User-Email
+      value: "{{bobEmail}}"
+  body:
+    type: json
+    data: |-
+      {
+        "expectedVersion": 9999
+      }
+  auth:
+    type: none
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status 409 Conflict", function() {
+          expect(res.status).to.equal(409);
+        });
+
+        test("Problem code STALE_VERSION", function() {
+          expect(res.body.code).to.equal("STALE_VERSION");
+          expect(res.body).to.have.property("currentVersion");
+        });
+
+settings:
+  encodeUrl: true

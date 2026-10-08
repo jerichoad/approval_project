@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-lg: 0.625rem;
+  --radius-md: calc(0.625rem - 2px);
+  --radius-sm: calc(0.625rem - 4px);
+
+  --color-gold-50: #fcf6e3;
+  --color-gold-100: #fbefa3;
+  --color-gold-200: #f4e8bb;
+  --color-gold-300: #e4c387;
+  --color-gold-400: #d9ae6c;
+  --color-gold-500: #cb9d51;
+  --color-gold-600: #b37f29;
+  --color-gold-700: #97691f;
+  --color-gold-800: #6a4a16;
+  --color-gold-900: #4a3410;
+
+  --color-navy-50: #eef0f7;
+  --color-navy-100: #dce1ef;
+  --color-navy-200: #b8c1de;
+  --color-navy-300: #8d9bc4;
+  --color-navy-400: #5d6d9f;
+  --color-navy-500: #3d4a80;
+  --color-navy-600: #313d6f;
+  --color-navy-700: #273461;
+  --color-navy-800: #1c2130;
+  --color-navy-900: #0f131f;
+
+  --color-success: #15803d;
+  --color-success-tint: #dcfce7;
+  --color-warning: #b45309;
+  --color-warning-tint: #fef3c7;
+  --color-error: #b91c1c;
+  --color-error-tint: #fee2e2;
+  --color-info: #0e7490;
+  --color-info-tint: #e0f2fe;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-accent: var(--sidebar-accent);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.376 0.087 272);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.376 0.087 272);
+  --sidebar: oklch(97.614% 0.00011 271.152);
+  --sidebar-accent: oklch(91.279% 0.0001 271.152);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background: var(--sidebar);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+  }
+}

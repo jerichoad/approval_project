@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: access_request_hub
+      POSTGRES_USER: arh
+      POSTGRES_PASSWORD: arh_local_dev_only
+    ports:
+      - "5432:5432"
+    volumes:
+      - arh_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arh -d access_request_hub"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  arh_pgdata:

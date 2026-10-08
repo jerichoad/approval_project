@@ -1,6 +1,146 @@
-@backendApproval_HostAddress = http://localhost:5123
+@base = http://localhost:5080
+@crm = 10000000-0000-0000-0000-000000000001
+@finance = 10000000-0000-0000-0000-000000000002
 
-GET {{backendApproval_HostAddress}}/weatherforecast/
-Accept: application/json
+### [Standard] Alice -> CRM / NonProduction / Read
+# @name standard
+POST {{base}}/api/access-requests
+X-User-Email: alice@example.local
+Content-Type: application/json
 
-###
+{
+  "clientRequestId": "demo-std-001",
+  "applicationId": "{{crm}}",
+  "environment": "NonProduction",
+  "accessLevel": "Read",
+  "justification": "Akses baca CRM untuk onboarding"
+}
+
+### [Standard] Bob approve -> Approved
+POST {{base}}/api/access-requests/{{standard.response.body.$.id}}/approve
+X-User-Email: bob@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 1 }
+
+### [Production] Alice -> CRM / Production / Read
+# @name prod
+POST {{base}}/api/access-requests
+X-User-Email: alice@example.local
+Content-Type: application/json
+
+{
+  "clientRequestId": "demo-prod-001",
+  "applicationId": "{{crm}}",
+  "environment": "Production",
+  "accessLevel": "Read",
+  "justification": "Investigasi tiket support"
+}
+
+### [Duplicate submit] Key yang sama dikirim ulang -> 200, ID sama dengan request di atas
+POST {{base}}/api/access-requests
+X-User-Email: alice@example.local
+Content-Type: application/json
+
+{
+  "clientRequestId": "demo-prod-001",
+  "applicationId": "{{crm}}",
+  "environment": "Production",
+  "accessLevel": "Read",
+  "justification": "Investigasi tiket support"
+}
+
+### [Unauthorized] Carol mencoba approve di tahap Manager -> 403 NOT_ASSIGNED_APPROVER
+POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+X-User-Email: carol@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 1 }
+
+### [Unauthorized] Dana (bukan owner CRM) mencoba approve -> 403
+POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+X-User-Email: dana@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 1 }
+
+### [Production] Bob approve -> PendingSystemOwnerApproval (version 2)
+POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+X-User-Email: bob@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 1 }
+
+### [Concurrent/stale] Bob approve lagi dengan version lama -> 409 STALE_VERSION
+POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+X-User-Email: bob@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 1 }
+
+### [Production] Carol approve -> Approved
+POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+X-User-Email: carol@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 2 }
+
+### [Admin access] Alice -> Finance Portal / NonProduction / Admin
+# @name admin
+POST {{base}}/api/access-requests
+X-User-Email: alice@example.local
+Content-Type: application/json
+
+{
+  "clientRequestId": "demo-admin-001",
+  "applicationId": "{{finance}}",
+  "environment": "NonProduction",
+  "accessLevel": "Admin",
+  "justification": "Rekonsiliasi akhir bulan"
+}
+
+### [Admin access] Bob approve -> menunggu Dana
+POST {{base}}/api/access-requests/{{admin.response.body.$.id}}/approve
+X-User-Email: bob@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 1 }
+
+### [Rejected] Alice membuat request
+# @name rej
+POST {{base}}/api/access-requests
+X-User-Email: alice@example.local
+Content-Type: application/json
+
+{
+  "clientRequestId": "demo-rej-001",
+  "applicationId": "{{crm}}",
+  "environment": "NonProduction",
+  "accessLevel": "Read",
+  "justification": "Coba-coba"
+}
+
+### [Rejected] Reject tanpa reason -> 400
+POST {{base}}/api/access-requests/{{rej.response.body.$.id}}/reject
+X-User-Email: bob@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 1, "reason": "   " }
+
+### [Rejected] Reject dengan reason -> Rejected
+POST {{base}}/api/access-requests/{{rej.response.body.$.id}}/reject
+X-User-Email: bob@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 1, "reason": "Justifikasi tidak cukup jelas" }
+
+### [Rejected] Approve setelah Rejected (version terbaru) -> 409 INVALID_TRANSITION
+POST {{base}}/api/access-requests/{{rej.response.body.$.id}}/approve
+X-User-Email: bob@example.local
+Content-Type: application/json
+
+{ "expectedVersion": 2 }
+
+### [Audit] Erin melihat detail + audit timeline
+GET {{base}}/api/access-requests/{{rej.response.body.$.id}}
+X-User-Email: erin@example.local

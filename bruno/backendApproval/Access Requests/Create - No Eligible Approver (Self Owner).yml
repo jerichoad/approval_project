@@ -34,8 +34,9 @@ runtime:
           expect(res.status).to.equal(422);
         });
 
-        test("Problem code NO_ELIGIBLE_APPROVER", function() {
-          expect(res.body.code).to.equal("NO_ELIGIBLE_APPROVER");
+        test("Envelope Status is E and code NO_ELIGIBLE_APPROVER", function() {
+          expect(res.body.Status).to.equal("E");
+          expect(res.body.Data.code).to.equal("NO_ELIGIBLE_APPROVER");
         });
 
 settings:

@@ -9,7 +9,12 @@ docs:
   type: text/markdown
   content: |-
     # Backend Approval API Collection
-    Collection Bruno untuk backendApproval (.NET 9 Web API).
+    Collection Bruno untuk backendApproval (.NET 8 Web API).
+    
+    ### Envelope Format
+    Semua response API dibungkus dalam format:
+    - Sukses: `{ "Status": "S", "Data": <payload> }`
+    - Error: `{ "Status": "E", "Data": { "code", "message", "correlationId", "fieldErrors", "extensions" } }`
     
     ### Autentikasi
     Menggunakan header `X-User-Email`. Demo users yang tersedia di database:

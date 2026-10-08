@@ -19,3 +19,6 @@ public sealed class ConflictException(string code, string message, Dictionary<st
 
 public sealed class BusinessRuleException(string code, string message)
     : AppException(StatusCodes.Status422UnprocessableEntity, code, message);
+
+public sealed class BadRequestException(string code, string message)
+    : AppException(StatusCodes.Status400BadRequest, code, message);

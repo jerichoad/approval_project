@@ -9,20 +9,23 @@ namespace backendApproval.Controllers;
 
 [ApiController]
 [Route("api")]
-public sealed class UsersController(AppDbContext db, CurrentUser currentUser) : ControllerBase
+public sealed class UsersController(AppDbContext db, CurrentUser currentUser, ILogger<UsersController> logger)
+    : BaseApiController(logger)
 {
     [HttpGet("users")]
-    public async Task<ActionResult<IReadOnlyList<UserSummaryResponse>>> GetAll(CancellationToken ct)
+    [ProducesResponseType<ApiResponse<IReadOnlyList<UserSummaryResponse>>>(StatusCodes.Status200OK)]
+    public Task<IActionResult> GetAll(CancellationToken ct) => ExecuteAsync(async () =>
     {
         var users = await db.Users.AsNoTracking()
             .OrderBy(u => u.DisplayName)
             .Select(u => new UserSummaryResponse(u.Id, u.Email, u.DisplayName))
             .ToListAsync(ct);
-        return Ok(users);
-    }
+        return Envelope<IReadOnlyList<UserSummaryResponse>>(users);
+    });
 
     [HttpGet("me")]
-    public async Task<ActionResult<MeResponse>> GetMe(CancellationToken ct)
+    [ProducesResponseType<ApiResponse<MeResponse>>(StatusCodes.Status200OK)]
+    public Task<IActionResult> GetMe(CancellationToken ct) => ExecuteAsync(async () =>
     {
         var me = currentUser.User;
         var hasDirectReports = await db.Users.AsNoTracking().AnyAsync(u => u.ManagerId == me.Id, ct);
@@ -32,12 +35,12 @@ public sealed class UsersController(AppDbContext db, CurrentUser currentUser) : 
             .OrderBy(a => a.Name)
             .ToListAsync(ct);
 
-        return Ok(new MeResponse(
+        return Envelope(new MeResponse(
             me.Id,
             me.Email,
             me.DisplayName,
             me.IsAuditor,
             hasDirectReports,
             ownedApps.Select(AccessRequestService.ToApplication).ToList()));
-    }
+    });
 }

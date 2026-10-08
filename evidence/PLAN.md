@@ -21,18 +21,19 @@ Autentikasi boleh disimulasikan. Saya memakai header `X-User-Email` yang dicocok
 
 ## 2. Arsitektur
 
-| Lapisan  | Pilihan                                                                |
-| -------- | ---------------------------------------------------------------------- |
-| Backend  | ASP.NET Core Web API, .NET 8, Controllers                              |
-| ORM      | EF Core 8 + Npgsql, naming snake_case lewat `EFCore.NamingConventions` |
-| Database | PostgreSQL 17 (Docker Compose atau instalasi lokal)                    |
-| Error    | `ProblemDetails` dengan field `code` dan `correlationId`               |
-| Frontend | React 19 + Vite, React Router, TanStack Query, Tailwind CSS v4         |
-| Test     | xUnit + `WebApplicationFactory` + Testcontainers (PostgreSQL asli)     |
+| Lapisan  | Pilihan                                                                                    |
+| -------- | ------------------------------------------------------------------------------------------ |
+| Backend  | ASP.NET Core Web API, .NET 8, Controllers                                                  |
+| ORM      | EF Core 8 + Npgsql, naming snake_case lewat `EFCore.NamingConventions`                     |
+| Database | PostgreSQL 17 (Docker Compose atau instalasi lokal)                                        |
+| Envelope | Response dibungkus `{ Status: "S" | "E", Data: ... }` dengan `Status` melambangkan sukses / error |
+| Error    | Try-catch di `BaseApiController.ExecuteAsync` membungkus `AppException` ke `{ Status: "E", Data: { code, message, correlationId, extensions } }`, fallback `AppExceptionHandler` |
+| Frontend | React 19 + Vite, React Router, TanStack Query, Tailwind CSS v4                             |
+| Test     | xUnit + `WebApplicationFactory` + Testcontainers (PostgreSQL asli)                         |
 
 Satu project API saja (`backendApproval/backendApproval`), dengan folder `Domain`, `Policies`, `Services`, `Data`, `Auth`, `Errors`, `Observability`, `Controllers`, `Contracts`.
 
-Alur request: `CorrelationIdMiddleware` (paling luar) -> `UseExceptionHandler` -> `CurrentUserMiddleware` (401 kalau header tidak dikenal) -> controller -> `AccessRequestService`.
+Alur request: `CorrelationIdMiddleware` (paling luar) -> `UseExceptionHandler` (fallback) -> `CurrentUserMiddleware` (401 envelope E kalau header tidak dikenal) -> controller `BaseApiController.ExecuteAsync` (try-catch) -> `AccessRequestService`.
 
 ## 3. Data model ringkas
 
@@ -84,7 +85,38 @@ PendingManagerApproval / PendingSystemOwnerApproval --reject--> Rejected
 
 **Guard di database, bukan hanya di C#.** Unique index, CHECK, dan trigger menjaga invariant walaupun ada bug di service. Biayanya: test tidak bisa membersihkan data (append-only), jadi setiap test class butuh database baru, dan suite test butuh sekitar satu menit.
 
-## 7. Perubahan plan selama implementasi
+## 8. Format Response Envelope
+
+Semua endpoint mengembalikan struktur seragam:
+
+- Sukses:
+```json
+{
+  "Status": "S",
+  "Data": { ... }
+}
+```
+
+- Error (4xx, 5xx):
+```json
+{
+  "Status": "E",
+  "Data": {
+    "code": "STALE_VERSION",
+    "message": "Request sudah berubah sejak terakhir dimuat.",
+    "correlationId": "8d052fcfc9c640429e2eb9aa81b2cd02",
+    "fieldErrors": null,
+    "extensions": {
+      "currentVersion": 2,
+      "currentStatus": "PendingSystemOwnerApproval"
+    }
+  }
+}
+```
+
+Semua pemanggilan API di controller dibungkus dalam blok `try-catch` terpusat melalui `BaseApiController.ExecuteAsync(Func<Task<IActionResult>>)` untuk menangkap `AppException` (404, 403, 409, 422, 400) dan unhandled exceptions (500) serta menandai `Status: "E"`. Validasi model binding (400) juga dibungkus via `InvalidModelStateResponseFactory`. Fallback middleware `AppExceptionHandler` tetap disiapkan bila ada exception di luar controller.
+
+## 9. Perubahan plan selama implementasi
 
 | Rencana awal                                                           | Implementasi                                                                                    | Alasan                                                                                                                                            |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -97,3 +129,4 @@ PendingManagerApproval / PendingSystemOwnerApproval --reject--> Rejected
 | React Router v7                                                        | React Router 8.4                                                                                | Versi terbaru saat `npm install`                                                                                                                  |
 | Styling "CSS sederhana"                                                | Tailwind CSS v4 dengan theme dari `luwes-weather-station/frontend`                              | Permintaan user untuk memakai tema dashboard tersebut                                                                                             |
 | Error reject ditampilkan di banner halaman                             | Error reject ditampilkan di dalam `RejectDialog`                                                | Banner tertutup modal dialog yang masih terbuka                                                                                                   |
+| Response `ProblemDetails` langsung sebagai body                        | Semua response dibungkus `{ Status: "S"\|"E", Data: ... }` lewat `BaseApiController.ExecuteAsync` (try-catch) | Permintaan user: format envelope seragam untuk sukses dan error, error ditangkap lewat try-catch eksplisit di controller, bukan hanya exception handler global |

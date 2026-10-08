@@ -6,12 +6,14 @@ namespace backendApproval.Controllers;
 
 [ApiController]
 [Route("api/approvals")]
-public sealed class ApprovalsController(AccessRequestService service) : ControllerBase
+public sealed class ApprovalsController(AccessRequestService service, ILogger<ApprovalsController> logger)
+    : BaseApiController(logger)
 {
     [HttpGet("inbox")]
-    public async Task<ActionResult<IReadOnlyList<AccessRequestSummaryResponse>>> Inbox(CancellationToken ct)
+    [ProducesResponseType<ApiResponse<IReadOnlyList<AccessRequestSummaryResponse>>>(StatusCodes.Status200OK)]
+    public Task<IActionResult> Inbox(CancellationToken ct) => ExecuteAsync(async () =>
     {
         var inbox = await service.InboxAsync(ct);
-        return Ok(inbox);
-    }
+        return Envelope(inbox);
+    });
 }

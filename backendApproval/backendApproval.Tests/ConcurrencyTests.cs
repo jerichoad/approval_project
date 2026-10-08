@@ -38,7 +38,8 @@ public sealed class ConcurrencyTests(ApiFactory factory) : ApiTestBase(factory),
 
         var problem = await ProblemAsync(stale);
         Assert.Equal("STALE_VERSION", problem.GetProperty("code").GetString());
-        Assert.Equal(2, problem.GetProperty("currentVersion").GetInt32());
-        Assert.Equal("PendingSystemOwnerApproval", problem.GetProperty("currentStatus").GetString());
+        var extensions = problem.GetProperty("extensions");
+        Assert.Equal(2, extensions.GetProperty("currentVersion").GetInt32());
+        Assert.Equal("PendingSystemOwnerApproval", extensions.GetProperty("currentStatus").GetString());
     }
 }

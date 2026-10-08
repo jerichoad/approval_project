@@ -24,12 +24,17 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
+        });
+
         test("Returns current user profile", function() {
-          expect(res.body).to.have.property("id");
-          expect(res.body).to.have.property("email");
-          expect(res.body).to.have.property("isAuditor");
-          expect(res.body).to.have.property("hasDirectReports");
-          expect(res.body.ownedApplications).to.be.an("array");
+          const me = res.body.Data;
+          expect(me).to.have.property("id");
+          expect(me).to.have.property("email");
+          expect(me).to.have.property("isAuditor");
+          expect(me).to.have.property("hasDirectReports");
+          expect(me.ownedApplications).to.be.an("array");
         });
 
 settings:

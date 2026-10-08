@@ -123,9 +123,16 @@ Tujuh skenario ini bisa didemokan lewat UI (`http://localhost:5173`) kecuali dis
 
 File `.http` memakai `clientRequestId` tetap (`demo-std-001`, `demo-prod-001`, dan seterusnya). Kalau dijalankan ulang di database yang sama, request pertama mendapat 200 (replay), bukan 201. Untuk demo bersih, buat ulang database lalu jalankan `dotnet ef database update`.
 
-## 9. Error handling
+## 9. Response Format & Error handling
 
-Semua error 4xx dan 5xx berbentuk `ProblemDetails` dengan field tambahan `code` dan `correlationId`. Header `X-Correlation-Id` juga dikirim di setiap response, termasuk yang sukses, untuk ditelusuri di log server.
+Semua endpoint mengembalikan body dengan format envelope:
+
+- **Sukses**: `{ "Status": "S", "Data": <payload> }`
+- **Error**: `{ "Status": "E", "Data": { "code": "...", "message": "...", "correlationId": "...", "fieldErrors": {...}, "extensions": {...} } }`
+
+Setiap action controller dibungkus blok `try-catch` terpusat melalui `BaseApiController.ExecuteAsync` untuk menangani `AppException` (404, 403, 409, 422, 400) dan exception tak terduga (500), kemudian menandai `Status: "E"`. Validasi model binding (400) juga dibungkus via `InvalidModelStateResponseFactory`.
+
+Header `X-Correlation-Id` tetap dikirim di setiap response HTTP, termasuk yang sukses, untuk ditelusuri di log server.
 
 ## 10. Dokumen lain
 

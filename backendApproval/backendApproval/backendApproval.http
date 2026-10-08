@@ -17,7 +17,7 @@ Content-Type: application/json
 }
 
 ### [Standard] Bob approve -> Approved
-POST {{base}}/api/access-requests/{{standard.response.body.$.id}}/approve
+POST {{base}}/api/access-requests/{{standard.response.body.$.Data.id}}/approve
 X-User-Email: bob@example.local
 Content-Type: application/json
 
@@ -51,35 +51,35 @@ Content-Type: application/json
 }
 
 ### [Unauthorized] Carol mencoba approve di tahap Manager -> 403 NOT_ASSIGNED_APPROVER
-POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+POST {{base}}/api/access-requests/{{prod.response.body.$.Data.id}}/approve
 X-User-Email: carol@example.local
 Content-Type: application/json
 
 { "expectedVersion": 1 }
 
 ### [Unauthorized] Dana (bukan owner CRM) mencoba approve -> 403
-POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+POST {{base}}/api/access-requests/{{prod.response.body.$.Data.id}}/approve
 X-User-Email: dana@example.local
 Content-Type: application/json
 
 { "expectedVersion": 1 }
 
 ### [Production] Bob approve -> PendingSystemOwnerApproval (version 2)
-POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+POST {{base}}/api/access-requests/{{prod.response.body.$.Data.id}}/approve
 X-User-Email: bob@example.local
 Content-Type: application/json
 
 { "expectedVersion": 1 }
 
 ### [Concurrent/stale] Bob approve lagi dengan version lama -> 409 STALE_VERSION
-POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+POST {{base}}/api/access-requests/{{prod.response.body.$.Data.id}}/approve
 X-User-Email: bob@example.local
 Content-Type: application/json
 
 { "expectedVersion": 1 }
 
 ### [Production] Carol approve -> Approved
-POST {{base}}/api/access-requests/{{prod.response.body.$.id}}/approve
+POST {{base}}/api/access-requests/{{prod.response.body.$.Data.id}}/approve
 X-User-Email: carol@example.local
 Content-Type: application/json
 
@@ -100,7 +100,7 @@ Content-Type: application/json
 }
 
 ### [Admin access] Bob approve -> menunggu Dana
-POST {{base}}/api/access-requests/{{admin.response.body.$.id}}/approve
+POST {{base}}/api/access-requests/{{admin.response.body.$.Data.id}}/approve
 X-User-Email: bob@example.local
 Content-Type: application/json
 
@@ -121,26 +121,26 @@ Content-Type: application/json
 }
 
 ### [Rejected] Reject tanpa reason -> 400
-POST {{base}}/api/access-requests/{{rej.response.body.$.id}}/reject
+POST {{base}}/api/access-requests/{{rej.response.body.$.Data.id}}/reject
 X-User-Email: bob@example.local
 Content-Type: application/json
 
 { "expectedVersion": 1, "reason": "   " }
 
 ### [Rejected] Reject dengan reason -> Rejected
-POST {{base}}/api/access-requests/{{rej.response.body.$.id}}/reject
+POST {{base}}/api/access-requests/{{rej.response.body.$.Data.id}}/reject
 X-User-Email: bob@example.local
 Content-Type: application/json
 
 { "expectedVersion": 1, "reason": "Justifikasi tidak cukup jelas" }
 
 ### [Rejected] Approve setelah Rejected (version terbaru) -> 409 INVALID_TRANSITION
-POST {{base}}/api/access-requests/{{rej.response.body.$.id}}/approve
+POST {{base}}/api/access-requests/{{rej.response.body.$.Data.id}}/approve
 X-User-Email: bob@example.local
 Content-Type: application/json
 
 { "expectedVersion": 2 }
 
 ### [Audit] Erin melihat detail + audit timeline
-GET {{base}}/api/access-requests/{{rej.response.body.$.id}}
+GET {{base}}/api/access-requests/{{rej.response.body.$.Data.id}}
 X-User-Email: erin@example.local

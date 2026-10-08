@@ -24,14 +24,19 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
-        test("Response contains detail and audit trail", function() {
-          expect(res.body).to.have.property("id");
-          expect(res.body).to.have.property("status");
-          expect(res.body).to.have.property("allowedActions");
-          expect(res.body.auditTrail).to.be.an("array");
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
         });
 
-        bru.setVar("requestVersion", res.body.version);
+        test("Response contains detail and audit trail", function() {
+          const data = res.body.Data;
+          expect(data).to.have.property("id");
+          expect(data).to.have.property("status");
+          expect(data).to.have.property("allowedActions");
+          expect(data.auditTrail).to.be.an("array");
+        });
+
+        bru.setVar("requestVersion", res.body.Data.version);
 
 settings:
   encodeUrl: true

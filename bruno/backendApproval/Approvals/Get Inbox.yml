@@ -24,8 +24,12 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
+        });
+
         test("Returns array", function() {
-          expect(res.body).to.be.an("array");
+          expect(res.body.Data).to.be.an("array");
         });
 
 settings:

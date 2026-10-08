@@ -1,4 +1,6 @@
+using backendApproval.Contracts;
 using backendApproval.Data;
+using backendApproval.Observability;
 using Microsoft.EntityFrameworkCore;
 
 namespace backendApproval.Auth;
@@ -25,12 +27,14 @@ public sealed class CurrentUserMiddleware(RequestDelegate next)
         if (user is null)
         {
             logger.LogWarning("Unauthenticated request to {Path}", path);
-            await Results.Problem(
-                statusCode: StatusCodes.Status401Unauthorized,
-                title: "Unknown or missing user",
-                detail: "Kirim header X-User-Email dengan salah satu demo user.",
-                extensions: new Dictionary<string, object?> { ["code"] = "UNAUTHENTICATED" })
-                .ExecuteAsync(ctx);
+            var correlationId = ctx.Items[CorrelationIdMiddleware.Header] as string;
+            ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            ctx.Response.ContentType = "application/json; charset=utf-8";
+            var errorBody = ApiErrorResponse.Error(
+                code: "UNAUTHENTICATED",
+                message: "Kirim header X-User-Email dengan salah satu demo user.",
+                correlationId: correlationId);
+            await ctx.Response.WriteAsJsonAsync(errorBody);
             return;
         }
 

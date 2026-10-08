@@ -22,12 +22,17 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
+        });
+
         test("Returns user list", function() {
-          expect(res.body).to.be.an("array");
-          expect(res.body.length).to.be.above(0);
-          expect(res.body[0]).to.have.property("id");
-          expect(res.body[0]).to.have.property("email");
-          expect(res.body[0]).to.have.property("displayName");
+          const users = res.body.Data;
+          expect(users).to.be.an("array");
+          expect(users.length).to.be.above(0);
+          expect(users[0]).to.have.property("id");
+          expect(users[0]).to.have.property("email");
+          expect(users[0]).to.have.property("displayName");
         });
 
 settings:

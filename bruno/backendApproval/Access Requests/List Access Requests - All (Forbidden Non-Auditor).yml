@@ -24,5 +24,10 @@ runtime:
           expect(res.status).to.equal(403);
         });
 
+        test("Envelope Status is E and code FORBIDDEN", function() {
+          expect(res.body.Status).to.equal("E");
+          expect(res.body.Data.code).to.equal("FORBIDDEN");
+        });
+
 settings:
   encodeUrl: true

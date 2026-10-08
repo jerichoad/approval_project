@@ -38,5 +38,10 @@ runtime:
           expect([200, 201]).to.include(res.status);
         });
 
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
+          expect(res.body.Data).to.have.property("id");
+        });
+
 settings:
   encodeUrl: true

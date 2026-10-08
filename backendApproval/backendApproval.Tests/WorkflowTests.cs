@@ -172,7 +172,7 @@ public sealed class WorkflowTests(ApiFactory factory) : ApiTestBase(factory), IC
 
         var inboxResponse = await Factory.ClientAs(Users.Bob).GetAsync("/api/approvals/inbox");
         Assert.Equal(HttpStatusCode.OK, inboxResponse.StatusCode);
-        var inbox = await inboxResponse.Content.ReadFromJsonAsync<List<SummaryDto>>(Json);
+        var inbox = await DataAsync<List<SummaryDto>>(inboxResponse);
 
         Assert.Contains(inbox!, r => r.Id == created.Id && r.Status == "PendingManagerApproval");
     }

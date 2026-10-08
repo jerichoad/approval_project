@@ -30,11 +30,15 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
-        test("Version incremented", function() {
-          expect(res.body.version).to.equal(Number(bru.getVar("requestVersion")) + 1);
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
         });
 
-        bru.setVar("requestVersion", res.body.version);
+        test("Version incremented", function() {
+          expect(res.body.Data.version).to.equal(Number(bru.getVar("requestVersion")) + 1);
+        });
+
+        bru.setVar("requestVersion", res.body.Data.version);
 
 settings:
   encodeUrl: true

@@ -5,6 +5,7 @@ export class ApiError extends Error {
     this.code = opts.code;
     this.fieldErrors = opts.fieldErrors;
     this.correlationId = opts.correlationId;
+    this.extensions = opts.extensions ?? {};
     this.problem = opts.problem;
   }
 }
@@ -38,15 +39,43 @@ export async function api(path, init = {}) {
     throw new ApiError(0, "Tidak dapat terhubung ke server.", { code: "NETWORK_ERROR" });
   }
 
+  const payload = await res.json().catch(() => null);
+
   if (res.ok) {
-    return res.status === 204 ? undefined : await res.json();
+    if (res.status === 204 || payload === null) return undefined;
+    // Format baru: { Status: "S", Data: ... }
+    if (payload && typeof payload === "object" && "Status" in payload && "Data" in payload) {
+      if (payload.Status === "S") return payload.Data;
+      // Jika status HTTP ok tapi Status === "E"
+      const errData = payload.Data ?? {};
+      throw new ApiError(res.status, errData.message ?? "Terjadi kesalahan.", {
+        code: errData.code,
+        fieldErrors: normalizeFieldErrors(errData.fieldErrors),
+        correlationId: res.headers.get("X-Correlation-Id") ?? errData.correlationId,
+        extensions: errData.extensions,
+        problem: payload,
+      });
+    }
+    return payload;
   }
 
-  const problem = await res.json().catch(() => ({}));
-  throw new ApiError(res.status, problem.detail ?? problem.title ?? res.statusText, {
-    code: problem.code,
-    fieldErrors: normalizeFieldErrors(problem.errors),
-    correlationId: res.headers.get("X-Correlation-Id") ?? problem.correlationId,
-    problem,
+  // Error HTTP: cek format envelope { Status: "E", Data: { code, message, ... } }
+  // atau fallback format lama / ProblemDetails
+  const errData = payload && typeof payload === "object" && payload.Status === "E" && payload.Data
+    ? payload.Data
+    : (payload ?? {});
+
+  const code = errData.code;
+  const message = errData.message ?? errData.detail ?? errData.title ?? res.statusText;
+  const fieldErrors = normalizeFieldErrors(errData.fieldErrors ?? errData.errors);
+  const correlationId = res.headers.get("X-Correlation-Id") ?? errData.correlationId;
+  const extensions = errData.extensions ?? {};
+
+  throw new ApiError(res.status, message, {
+    code,
+    fieldErrors,
+    correlationId,
+    extensions,
+    problem: payload,
   });
 }

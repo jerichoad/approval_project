@@ -44,8 +44,8 @@ public sealed class AuthorizationTests(ApiFactory factory) : ApiTestBase(factory
         await CreateAsync(Users.Alice, Apps.Crm, "NonProduction", "Read");
         var response = await Factory.ClientAs(Users.Erin).GetAsync("/api/access-requests?scope=all");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var data = await response.Content.ReadFromJsonAsync<List<SummaryDto>>(Json);
-        Assert.NotEmpty(data!);
+        var data = await DataAsync<List<SummaryDto>>(response);
+        Assert.NotEmpty(data);
     }
 
     [Fact]

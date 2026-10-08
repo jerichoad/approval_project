@@ -34,13 +34,18 @@ runtime:
           expect(res.status).to.equal(201);
         });
 
-        test("High risk requires manager then system owner", function() {
-          expect(res.body.isHighRisk).to.equal(true);
-          expect(res.body.status).to.equal("PendingManagerApproval");
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
         });
 
-        bru.setVar("highRiskRequestId", res.body.id);
-        bru.setVar("highRiskRequestVersion", res.body.version);
+        test("High risk requires manager then system owner", function() {
+          const data = res.body.Data;
+          expect(data.isHighRisk).to.equal(true);
+          expect(data.status).to.equal("PendingManagerApproval");
+        });
+
+        bru.setVar("highRiskRequestId", res.body.Data.id);
+        bru.setVar("highRiskRequestVersion", res.body.Data.version);
 
 settings:
   encodeUrl: true

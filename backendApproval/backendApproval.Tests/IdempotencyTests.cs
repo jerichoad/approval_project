@@ -14,13 +14,13 @@ public sealed class IdempotencyTests(ApiFactory factory) : ApiTestBase(factory),
 
         var r1 = await Factory.ClientAs(Users.Alice).PostAsJsonAsync("/api/access-requests", body);
         Assert.Equal(HttpStatusCode.Created, r1.StatusCode);
-        var d1 = await r1.Content.ReadFromJsonAsync<DetailDto>(Json);
+        var d1 = await DataAsync<DetailDto>(r1);
 
         var r2 = await Factory.ClientAs(Users.Alice).PostAsJsonAsync("/api/access-requests", body);
         Assert.Equal(HttpStatusCode.OK, r2.StatusCode);
-        var d2 = await r2.Content.ReadFromJsonAsync<DetailDto>(Json);
+        var d2 = await DataAsync<DetailDto>(r2);
 
-        Assert.Equal(d1!.Id, d2!.Id);
+        Assert.Equal(d1.Id, d2.Id);
     }
 
     [Fact]
@@ -57,8 +57,8 @@ public sealed class IdempotencyTests(ApiFactory factory) : ApiTestBase(factory),
         var ids = new HashSet<Guid>();
         foreach (var r in responses)
         {
-            var dto = await r.Content.ReadFromJsonAsync<DetailDto>(Json);
-            ids.Add(dto!.Id);
+            var dto = await DataAsync<DetailDto>(r);
+            ids.Add(dto.Id);
         }
         Assert.Single(ids);
     }

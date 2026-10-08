@@ -24,12 +24,17 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
+        });
+
         test("All items belong to Alice", function() {
-          expect(res.body).to.be.an("array");
-          if (res.body.length > 0) {
-            expect(res.body[0].requester.email).to.equal("alice@example.local");
-            bru.setVar("requestId", res.body[0].id);
-            bru.setVar("requestVersion", res.body[0].version);
+          const list = res.body.Data;
+          expect(list).to.be.an("array");
+          if (list.length > 0) {
+            expect(list[0].requester.email).to.equal("alice@example.local");
+            bru.setVar("requestId", list[0].id);
+            bru.setVar("requestVersion", list[0].version);
           }
         });
 

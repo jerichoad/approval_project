@@ -32,6 +32,13 @@ Tool AI: opencode (CLI agent), model `9router/api.jerichoad` (gabungan Claude Op
 - Status: rejected untuk sekarang (belum dikerjakan). Dicatat sebagai deferred work di REVIEW.md.
 - Why: aturan backend sudah benar; tambahan ini hanya perbaikan UX.
 
+### 5. Standardisasi Response Envelope (Status & Data) serta Try-Catch Error Handling
+
+- Ask: user meminta response API memiliki field `Status` (S atau E) dan `Data` (payload response). Pemanggilan API di controller diberi `try-catch` untuk menangkap error, dan saat ada exception, `Status` diberi tanda `E`. Dokumen evidence dan koleksi Bruno disesuaikan.
+- Suggestion: implementasikan `ApiResponse<T>` dan `ApiErrorResponse` dengan PascalCase `Status` dan `Data`. Buat `BaseApiController` dengan helper `ExecuteAsync(Func<Task<IActionResult>>)` yang memiliki blok `try-catch` terpusat untuk menangkap `AppException` (4xx) dan unhandled exceptions (500), membungkusnya menjadi `{ Status: "E", Data: { code, message, correlationId, fieldErrors, extensions } }`. Model validation failure (400) dibungkus via `InvalidModelStateResponseFactory`. Update frontend client (`api/client.js`), test xUnit (`TestFixtures.cs`), file `.http`, koleksi Bruno, dan dokumen evidence.
+- Status: accepted.
+- Why: standardisasi envelope konsisten di seluruh lapisan (backend, frontend, automated test, dan dokumen evidence) tanpa merusak semantik status code HTTP.
+
 ## Three things AI got wrong
 
 Bagian ini bukan tentang plan yang salah. Plan di `files_new_net/` saya pakai apa adanya. Yang dicatat di sini adalah kesalahan pada output AI saat menerjemahkan plan menjadi kode dan instruksi, yang saya temukan saat review atau saat menjalankan build/test.

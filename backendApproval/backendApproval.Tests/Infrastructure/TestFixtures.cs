@@ -41,6 +41,10 @@ public sealed record DetailDto(
 
 public sealed record SummaryDto(Guid Id, string Status, int Version);
 
+public sealed record Envelope<T>(
+    [property: System.Text.Json.Serialization.JsonPropertyName("Status")] string Status,
+    [property: System.Text.Json.Serialization.JsonPropertyName("Data")] T Data);
+
 public abstract class ApiTestBase(ApiFactory factory)
 {
     protected static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -58,19 +62,27 @@ public abstract class ApiTestBase(ApiFactory factory)
             justification
         };
 
+    protected static async Task<T> DataAsync<T>(HttpResponseMessage response)
+    {
+        var envelope = await response.Content.ReadFromJsonAsync<Envelope<T>>(Json);
+        Assert.NotNull(envelope);
+        Assert.Equal("S", envelope!.Status);
+        return envelope.Data;
+    }
+
     protected async Task<DetailDto> CreateAsync(string user, Guid app, string environment, string accessLevel)
     {
         var response = await Factory.ClientAs(user)
             .PostAsJsonAsync("/api/access-requests", CreateBody(app, environment, accessLevel));
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        return (await response.Content.ReadFromJsonAsync<DetailDto>(Json))!;
+        return await DataAsync<DetailDto>(response);
     }
 
     protected async Task<DetailDto> GetDetailAsync(string user, Guid id)
     {
         var response = await Factory.ClientAs(user).GetAsync($"/api/access-requests/{id}");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        return (await response.Content.ReadFromJsonAsync<DetailDto>(Json))!;
+        return await DataAsync<DetailDto>(response);
     }
 
     protected Task<HttpResponseMessage> ApproveAsync(string user, Guid id, int expectedVersion) =>
@@ -79,8 +91,12 @@ public abstract class ApiTestBase(ApiFactory factory)
     protected Task<HttpResponseMessage> RejectAsync(string user, Guid id, int expectedVersion, string? reason) =>
         Factory.ClientAs(user).PostAsJsonAsync($"/api/access-requests/{id}/reject", new { expectedVersion, reason });
 
-    protected static async Task<JsonElement> ProblemAsync(HttpResponseMessage response) =>
-        await response.Content.ReadFromJsonAsync<JsonElement>(Json);
+    protected static async Task<JsonElement> ProblemAsync(HttpResponseMessage response)
+    {
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>(Json);
+        Assert.Equal("E", body.GetProperty("Status").GetString());
+        return body.GetProperty("Data");
+    }
 
     protected static async Task AssertProblemCodeAsync(HttpResponseMessage response, HttpStatusCode status, string code)
     {

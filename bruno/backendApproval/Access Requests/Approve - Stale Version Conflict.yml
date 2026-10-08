@@ -30,9 +30,11 @@ runtime:
           expect(res.status).to.equal(409);
         });
 
-        test("Problem code STALE_VERSION", function() {
-          expect(res.body.code).to.equal("STALE_VERSION");
-          expect(res.body).to.have.property("currentVersion");
+        test("Envelope Status is E and code STALE_VERSION", function() {
+          expect(res.body.Status).to.equal("E");
+          expect(res.body.Data.code).to.equal("STALE_VERSION");
+          expect(res.body.Data.extensions).to.have.property("currentVersion");
+          expect(res.body.Data.extensions).to.have.property("currentStatus");
         });
 
 settings:

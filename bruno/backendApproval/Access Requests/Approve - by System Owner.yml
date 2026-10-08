@@ -30,5 +30,9 @@ runtime:
           expect([200, 403]).to.include(res.status);
         });
 
+        test("Envelope Status matches HTTP result", function() {
+          expect(res.body.Status).to.equal(res.status === 200 ? "S" : "E");
+        });
+
 settings:
   encodeUrl: true

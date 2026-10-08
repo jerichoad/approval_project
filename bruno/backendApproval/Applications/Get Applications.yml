@@ -24,11 +24,16 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
+        });
+
         test("Returns applications with system owner", function() {
-          expect(res.body).to.be.an("array");
-          expect(res.body.length).to.be.above(0);
-          expect(res.body[0]).to.have.property("code");
-          expect(res.body[0]).to.have.property("systemOwner");
+          const apps = res.body.Data;
+          expect(apps).to.be.an("array");
+          expect(apps.length).to.be.above(0);
+          expect(apps[0]).to.have.property("code");
+          expect(apps[0]).to.have.property("systemOwner");
         });
 
 settings:

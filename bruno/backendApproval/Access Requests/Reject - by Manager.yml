@@ -31,9 +31,13 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
-        test("Status is Rejected", function() {
-          expect(res.body.status).to.equal("Rejected");
-          expect(res.body.rejectionReason).to.equal("Business justification is insufficient for this role.");
+        test("Envelope Status is S", function() {
+          expect(res.body.Status).to.equal("S");
+        });
+
+        test("Request status is Rejected", function() {
+          expect(res.body.Data.status).to.equal("Rejected");
+          expect(res.body.Data.rejectionReason).to.equal("Business justification is insufficient for this role.");
         });
 
 settings:

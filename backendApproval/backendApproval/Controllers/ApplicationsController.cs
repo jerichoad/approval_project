@@ -8,15 +8,18 @@ namespace backendApproval.Controllers;
 
 [ApiController]
 [Route("api/applications")]
-public sealed class ApplicationsController(AppDbContext db) : ControllerBase
+public sealed class ApplicationsController(AppDbContext db, ILogger<ApplicationsController> logger)
+    : BaseApiController(logger)
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ApplicationResponse>>> GetAll(CancellationToken ct)
+    [ProducesResponseType<ApiResponse<IReadOnlyList<ApplicationResponse>>>(StatusCodes.Status200OK)]
+    public Task<IActionResult> GetAll(CancellationToken ct) => ExecuteAsync(async () =>
     {
         var apps = await db.Applications.AsNoTracking()
             .Include(a => a.SystemOwner)
             .OrderBy(a => a.Name)
             .ToListAsync(ct);
-        return Ok(apps.Select(AccessRequestService.ToApplication).ToList());
-    }
+        return Envelope<IReadOnlyList<ApplicationResponse>>(
+            apps.Select(AccessRequestService.ToApplication).ToList());
+    });
 }

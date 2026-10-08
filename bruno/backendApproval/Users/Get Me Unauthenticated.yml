@@ -24,8 +24,12 @@ runtime:
           expect(res.status).to.equal(401);
         });
 
-        test("Problem code UNAUTHENTICATED", function() {
-          expect(res.body.code).to.equal("UNAUTHENTICATED");
+        test("Envelope Status is E", function() {
+          expect(res.body.Status).to.equal("E");
+        });
+
+        test("Error code UNAUTHENTICATED", function() {
+          expect(res.body.Data.code).to.equal("UNAUTHENTICATED");
         });
 
 settings:

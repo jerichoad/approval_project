@@ -30,8 +30,12 @@ runtime:
           expect(res.status).to.equal(403);
         });
 
-        test("Problem code SELF_APPROVAL_NOT_ALLOWED or NOT_ASSIGNED_APPROVER", function() {
-          expect(["SELF_APPROVAL_NOT_ALLOWED", "NOT_ASSIGNED_APPROVER"]).to.include(res.body.code);
+        test("Envelope Status is E", function() {
+          expect(res.body.Status).to.equal("E");
+        });
+
+        test("Error code SELF_APPROVAL_NOT_ALLOWED or NOT_ASSIGNED_APPROVER", function() {
+          expect(["SELF_APPROVAL_NOT_ALLOWED", "NOT_ASSIGNED_APPROVER"]).to.include(res.body.Data.code);
         });
 
 settings:
